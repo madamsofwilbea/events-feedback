@@ -421,7 +421,13 @@ form.addEventListener("submit", async e => {
     if (missing.length) { err.textContent = "For your donation, please add: " + missing.join(", ") + ". Or pick \"Not this time\" to send feedback only."; err.classList.add("show"); err.scrollIntoView({ block: "center" }); return; }
     gift = { amt, method, anon, proof };
   }
-  if (V.enabled) answers.push({ label: "Madams' Vault", type: "choice", value: vaultChoice === "yes" ? V.yes + " (" + pesoFmt(gift.amt) + ")" : vaultChoice === "no" ? V.no : "" });
+  if (V.enabled) {
+    answers.push({ label: "Madams' Vault", type: "choice", value: vaultChoice === "yes" ? V.yes : vaultChoice === "no" ? V.no : "" });
+    answers.push({ label: "Donation amount", type: "short", value: gift ? pesoFmt(gift.amt) : "" });
+    answers.push({ label: "Donation method", type: "choice", value: gift ? QR_LABELS[gift.method] : "" });
+    answers.push({ label: "Donor", type: "short", value: gift ? (gift.anon === "known" ? $("dName").value.trim() + ($("dHandle").value.trim() ? " · " + $("dHandle").value.trim() : "") : "Anonymous") : "" });
+    answers.push({ label: "Proof of generosity", type: "file", value: "" });   // filled in below once the image is ready
+  }
 
   if (!filled) { err.textContent = "Please answer at least one question before sending."; err.classList.add("show"); err.scrollIntoView({ block: "center" }); return; }
   if (CONFIG.submitUrl.startsWith("PASTE_")) { err.textContent = "The form isn't connected yet — the admin still needs to add the Apps Script URL."; err.classList.add("show"); return; }
@@ -430,6 +436,7 @@ form.addEventListener("submit", async e => {
   try {
     if (gift) {
       const dataUrl = await resizeImage(gift.proof, 1400, 0.82);
+      const pf = answers.find(a => a.type === "file"); if (pf) pf.value = { dataUrl, name: gift.proof.name || "proof.jpg" };
       const known = gift.anon === "known";
       await submitToVault({ name: known ? $("dName").value.trim() : "Anonymous", email: known ? $("dEmail").value.trim() : "", mobile: "", handle: known ? $("dHandle").value.trim() : "",
         member: known ? "Known donor" : "Anonymous", amount: pesoFmt(gift.amt), payment: QR_LABELS[gift.method], proof: dataUrl, proofName: gift.proof.name || "proof.jpg", source: "events-feedback: " + CONFIG.event });
