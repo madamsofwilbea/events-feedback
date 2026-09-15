@@ -68,6 +68,18 @@
   .vault p{font-size:14px;color:color-mix(in srgb,var(--paper) 82%,transparent);margin-bottom:14px;}
   .vault .chips span{background:transparent;border-color:color-mix(in srgb,var(--accent) 60%,transparent);color:var(--paper);}
   .vault .chips input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--deep);}
+  .vault .tiers{margin:0 0 14px;padding:14px;border-radius:14px;background:color-mix(in srgb,#fff 6%,transparent);border:1.5px solid color-mix(in srgb,var(--accent) 45%,transparent);}
+  .vault .tiers-kicker{font-size:10.5px;letter-spacing:3px;text-transform:uppercase;font-weight:700;color:var(--accent);}
+  .vault .tiers-period{font-size:12px;color:color-mix(in srgb,var(--paper) 75%,transparent);margin:3px 0 10px;}
+  .vault .ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .vault .tier{border-radius:10px;padding:8px 4px 7px;text-align:center;border:1.5px solid color-mix(in srgb,var(--paper) 30%,transparent);}
+  .vault .tier b{display:block;font-family:var(--heading);font-size:13.5px;color:#fff;}
+  .vault .tier i{font-style:normal;font-size:11.5px;color:color-mix(in srgb,var(--paper) 80%,transparent);}
+  .vault .tier.tier-crown{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent);} .vault .tier.tier-crown b{color:var(--accent-light);}
+  .vault .tier.gold{border-color:color-mix(in srgb,var(--accent) 70%,transparent);}
+  .vault .tiers-fine{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--paper) 78%,transparent);margin-top:10px;}
+  .vault .same-note{font-size:12.5px;line-height:1.45;color:var(--accent-light);margin:-2px 0 10px;}
+  @media (max-width:480px){ .vault .ladder{grid-template-columns:repeat(2,1fr);} }
   .donate{display:none;margin-top:18px;padding-top:18px;border-top:1px solid color-mix(in srgb,var(--accent) 40%,transparent);}
   .donate.show{display:block;}
   .donate .q>label,.donate .q>.qlabel,.donate .row label{display:block;font-weight:700;font-size:15px;margin-bottom:8px;color:var(--paper);}
@@ -124,6 +136,17 @@
       <div class="vault" id="vaultBox">
         <h3 id="vTitle"></h3>
         <p id="vText"></p>
+        <div class="tiers" id="tiersBox">
+          <div class="tiers-kicker">The Madams' Vault Tiers</div>
+          <div class="tiers-period" id="tiersPeriod"></div>
+          <div class="ladder">
+            <div class="tier"><b>Jade</b><i>₱1,000</i></div>
+            <div class="tier"><b>Emerald</b><i>₱2,500</i></div>
+            <div class="tier gold"><b>Gold</b><i>₱5,000</i></div>
+            <div class="tier tier-crown"><b>Crown</b><i>₱7,000+</i></div>
+          </div>
+          <div class="tiers-fine">Verified donations within a period add up — four ₱250 gifts = Jade. Reach a tier and hold it for the rest of the period, with perks announced monthly. Tiers reset every quarter; your all-time total lives on in the Hall of Madams.</div>
+        </div>
         <div class="chips">
           <label><input type="radio" name="__vault" value="yes"><span id="vYes"></span></label>
           <label><input type="radio" name="__vault" value="no"><span id="vNo"></span></label>
@@ -151,13 +174,14 @@
             <div class="qr" id="qrBox"><div class="cap" id="qrCap"></div><img id="qrImg" alt=""></div>
           </div>
           <div class="q">
-            <div class="qlabel">Would you like to be known, or keep it anonymous?</div>
+            <div class="qlabel">Would you like to be known, or keep it anonymous? <span class="hint">(anonymous gifts are welcome, but only named donations can be tracked toward a tier)</span></div>
             <div class="chips">
               <label><input type="radio" name="__anon" value="known"><span>You can know it's me</span></label>
               <label><input type="radio" name="__anon" value="anon"><span>Keep it anonymous</span></label>
             </div>
           </div>
           <div id="donorDetails" style="display:none">
+            <div class="same-note">Use the same email and IG handle you use on the Vault page, so this donation adds up toward your tier.</div>
             <div class="q"><label for="dName">Full name</label><input type="text" id="dName" autocomplete="name"></div>
             <div class="q row">
               <div><label for="dEmail">Email</label><input type="email" id="dEmail" autocomplete="email"></div>
@@ -227,8 +251,9 @@ const CONFIG = {
     text: "Please support the Madams' Vault — our community fund for projects, events, and little surprises for the Madams. Give what your heart allows.",
     yes: "Yes, I'd like to donate",
     no: "Not this time",
+    tiersPeriod: "Batch 1 · BER Months · Sept 15 – Dec 31, 2026",   // set to "" to hide the tier ladder
     thanksTitle: "Salamat, Fam!",
-    thanksText: "Your feedback is with the admin team, and your donation is on its way. The Madams' Circle will verify your proof of payment and send your thank-you shortly. Your kindness keeps our community glowing. 💚"
+    thanksText: "Your feedback is with the admin team, and your donation is on its way. The Madams' Circle will verify your proof of payment and send your thank-you shortly. Your kindness keeps our community glowing. 💚 Named donations count toward The Madams' Vault Tiers — once verified, your thank-you email will show your running total and tier. 👑"
   },
   vaultSubmitUrl: "https://script.google.com/macros/s/AKfycbxxmglFWPJMOhdX40ZNq6hnJuUf8rCsV8GMb5_CR8ZZ7Nnvc5pMxso3Ky5AGY9eYx34/exec", // the Vault's own backend (same as the Vault page)
 
@@ -314,6 +339,7 @@ const V = CONFIG.vault || {};
 if (V.enabled) {
   $("vTitle").textContent = V.title; $("vText").textContent = V.text; $("vYes").textContent = V.yes; $("vNo").textContent = V.no;
   $("doneVaultTitle").textContent = V.thanksTitle; $("doneVaultText").textContent = V.thanksText;
+  if (V.tiersPeriod) { $("tiersPeriod").textContent = V.tiersPeriod; } else { $("tiersBox").style.display = "none"; }
   form.addEventListener("change", e => {
     if (e.target.name === "__vault") { $("donate").classList.toggle("show", e.target.value === "yes"); }
     if (e.target.name === "__anon") {
@@ -439,7 +465,7 @@ form.addEventListener("submit", async e => {
       const pf = answers.find(a => a.type === "file"); if (pf) pf.value = { dataUrl, name: gift.proof.name || "proof.jpg" };
       const known = gift.anon === "known";
       await submitToVault({ name: known ? $("dName").value.trim() : "Anonymous", email: known ? $("dEmail").value.trim() : "", mobile: "", handle: known ? $("dHandle").value.trim() : "",
-        member: known ? "Known donor" : "Anonymous", amount: pesoFmt(gift.amt), payment: QR_LABELS[gift.method], proof: dataUrl, proofName: gift.proof.name || "proof.jpg", source: "events-feedback: " + CONFIG.event });
+        member: known ? "Known donor" : "Anonymous", wall: known ? "Yes, with IG handle" : "Anonymous", amount: pesoFmt(gift.amt), payment: QR_LABELS[gift.method], proof: dataUrl, proofName: gift.proof.name || "proof.jpg", source: "events-feedback: " + CONFIG.event });
       $("doneVaultAmt").textContent = pesoFmt(gift.amt);
     }
     await fetch(CONFIG.submitUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" },
